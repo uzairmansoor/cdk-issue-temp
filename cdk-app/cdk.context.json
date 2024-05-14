@@ -1,0 +1,4 @@
+{
+  "ssm:account=355986150263:parameterName=/cdk-app/tableOne:region=us-east-1": "arn:aws:dynamodb:us-east-1:355986150263:table/cdk-app-tableOneFB925124-1NXB6S8ZJIQ1V",
+  "ssm:account=355986150263:parameterName=/cdk-app/tableTwo:region=us-east-1": "arn:aws:dynamodb:us-east-1:355986150263:table/cdk-app-tableTwo3F505A29-FFDIM3YQR6MN"
+}

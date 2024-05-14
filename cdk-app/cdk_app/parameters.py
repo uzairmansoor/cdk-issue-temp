@@ -1,0 +1,2 @@
+enableOldLambdaDefs = True
+enableOldTableDefs = True
