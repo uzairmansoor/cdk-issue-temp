@@ -1,2 +1,2 @@
-enableOldLambdaDefs = True
-enableOldTableDefs = True
+enableOldLambdaDefs = False
+enableOldTableDefs = False

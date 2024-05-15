@@ -1,4 +1,6 @@
 {
   "ssm:account=355986150263:parameterName=/cdk-app/tableOne:region=us-east-1": "arn:aws:dynamodb:us-east-1:355986150263:table/cdk-app-tableOneFB925124-1NXB6S8ZJIQ1V",
-  "ssm:account=355986150263:parameterName=/cdk-app/tableTwo:region=us-east-1": "arn:aws:dynamodb:us-east-1:355986150263:table/cdk-app-tableTwo3F505A29-FFDIM3YQR6MN"
+  "ssm:account=355986150263:parameterName=/cdk-app/tableTwo:region=us-east-1": "arn:aws:dynamodb:us-east-1:355986150263:table/cdk-app-tableTwo3F505A29-FFDIM3YQR6MN",
+  "ssm:account=007756798683:parameterName=/cdk-app/tableOne:region=us-east-1": "arn:aws:dynamodb:us-east-1:007756798683:table/cdk-app-tableOneFB925124-VMIO8SL664C1",
+  "ssm:account=007756798683:parameterName=/cdk-app/tableTwo:region=us-east-1": "arn:aws:dynamodb:us-east-1:007756798683:table/cdk-app-tableTwo3F505A29-12A2AKS91S906"
 }

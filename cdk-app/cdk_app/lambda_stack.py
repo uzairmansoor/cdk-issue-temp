@@ -57,7 +57,7 @@ class LambdaStack(Stack):
                     runtime=_lambda.Runtime.PYTHON_3_9,
                     code=_lambda.Code.from_asset("lambda"),
                     handler=f"{lambda_def['id']}.handler",
-                    role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn="arn:aws:iam::355986150263:role/service-role/MyLambdaFunc-role-paxc3b5h"),
+                    # role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn="arn:aws:iam::355986150263:role/service-role/MyLambdaFunc-role-paxc3b5h"),
                     environment=lambda_env_data
                 )
 
@@ -81,7 +81,6 @@ class LambdaStack(Stack):
                     runtime=_lambda.Runtime.PYTHON_3_9,
                     code=_lambda.Code.from_asset("lambda"),
                     handler=f"{lambda_def['id']}.handler",
-                    role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn="arn:aws:iam::355986150263:role/service-role/MyLambdaFunc-role-paxc3b5h"),
                     environment=lambda_env_data
                 )
 
