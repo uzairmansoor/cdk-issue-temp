@@ -4,18 +4,16 @@ import aws_cdk as cdk
 
 from cdk_app.cdk_app_stack import CdkAppStack
 from cdk_app.lambda_stack import LambdaStack
+from cdk_app.combined import CombinedStack
+import os
 
-primary_env = {'account': '007756798683', 'region': 'us-east-1'}
+primary_env = {'account': '355986150263', 'region': 'us-east-2'}
 
 app = cdk.App()
-cdk_app_stack = CdkAppStack(app, "cdk-app", env=primary_env)
-# table_one_arn = cdk.CfnParameter.value_from_lookup(
-#     cdk_app_stack, "/cdk-app/tableOneParameter"
-# )
-# table_two_arn = cdk.CfnParameter.value_from_lookup(
-#     cdk_app_stack, "/cdk-app/tableTwoParameter"
-# )
+# combinedStack = CombinedStack(app, "cdk-app", env=primary_env)
 
-lambda_stack = LambdaStack(app, 'lambda-stack', env=primary_env) #cdk_app_stack.table_objects
-lambda_stack.add_dependency(cdk_app_stack)
+cdkAppStack = CdkAppStack(app, "cdk-app", env=primary_env)
+
+lambda_stack = LambdaStack(app, 'lambda-stack', ssm_parameters=cdkAppStack.ssm_parameters, env=primary_env)
+lambda_stack.add_dependency(cdkAppStack)
 app.synth()

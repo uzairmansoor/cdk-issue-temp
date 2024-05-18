@@ -1,13 +1,13 @@
 import aws_cdk
-from aws_cdk import Stack, CfnOutput, aws_events_targets
+from aws_cdk import Stack, CfnOutput, Aws as AWS
 from aws_cdk import aws_apigateway as _apigw
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_dynamodb as _dynamodb
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_events as events
+from aws_cdk import aws_events_targets
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_ssm as ssm
-from aws_cdk import Aws as AWS
 from constructs import Construct
 from . import parameters
 
@@ -26,6 +26,10 @@ new_table_defs = [
     {
         'id': 'tableOne',
         'partition_key': "PartitionKey"
+    },
+    {
+        'id': 'tableTwo',
+        'partition_key': "PartitionKey"
     }
 ]
 
@@ -39,7 +43,7 @@ old_lambda_defs = [
     {
         'id': 'lambdaTwo',
         'tables_used': [
-            'tableOne','tableTwo'
+            'tableOne', 'tableTwo'
         ]
     }
 ]
@@ -54,12 +58,12 @@ new_lambda_defs = [
     {
         'id': 'lambdaTwo',
         'tables_used': [
-            'tableOne'
+            'tableOne', 'tableTwo'
         ]
     }
 ]
-###################################  Running  ####################################################
-class CdkAppStack(Stack):
+
+class CombinedStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -90,4 +94,44 @@ class CdkAppStack(Stack):
             )
             self.ssm_parameters[table_def['id']] = ssm_param.string_value
 
-###################################  Running  ####################################################
+        self.create_lambda_functions()
+
+    def create_lambda_functions(self):
+        lambdaExecutionRole = iam.Role(self, "lambdaExecutionRole",
+            role_name="lambdaExecutionRole",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+        )
+
+        lambdaExecutionRole.attach_inline_policy(
+            iam.Policy(self, 'dynamodbPolicy',
+                statements=[
+                    iam.PolicyStatement(
+                        effect=iam.Effect.ALLOW,
+                        actions=[
+                            "dynamodb:Query"
+                        ],
+                        resources=[
+                            f"arn:aws:dynamodb:{AWS.REGION}:{AWS.ACCOUNT_ID}:table/*"
+                        ]
+                    )
+                ]
+            )
+        )
+
+        enableOldLambdaDefs = parameters.enableOldLambdaDefs
+        lambda_defs = old_lambda_defs if enableOldLambdaDefs else new_lambda_defs
+        for lambda_def in lambda_defs:
+            lambda_env_data = {}
+
+            for table_used in lambda_def['tables_used']:
+                table_name = self.ssm_parameters.get(table_used)
+                lambda_env_data[f'TABLENAME{table_used.upper()}'] = table_name
+
+            sample_lambda = _lambda.Function(self,
+                id=lambda_def['id'],
+                runtime=_lambda.Runtime.PYTHON_3_9,
+                code=_lambda.Code.from_asset("lambda"),
+                handler=f"{lambda_def['id']}.handler",
+                role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn=lambdaExecutionRole.role_arn),
+                environment=lambda_env_data
+            )
