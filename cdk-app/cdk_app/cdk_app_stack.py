@@ -29,35 +29,6 @@ new_table_defs = [
     }
 ]
 
-old_lambda_defs = [
-    {
-        'id': 'lambdaOne',
-        'tables_used': [
-            'tableOne'
-        ]
-    },
-    {
-        'id': 'lambdaTwo',
-        'tables_used': [
-            'tableOne','tableTwo'
-        ]
-    }
-]
-
-new_lambda_defs = [
-    {
-        'id': 'lambdaOne',
-        'tables_used': [
-            'tableOne'
-        ]
-    },
-    {
-        'id': 'lambdaTwo',
-        'tables_used': [
-            'tableOne'
-        ]
-    }
-]
 ###################################  Running  ####################################################
 class CdkAppStack(Stack):
 
@@ -67,27 +38,74 @@ class CdkAppStack(Stack):
         self.table_objects = {}
         self.ssm_parameters = {}
 
-        enableOldTableDefs = parameters.enableOldTableDefs
-        table_defs = old_table_defs if enableOldTableDefs else new_table_defs
-        for table_def in table_defs:
-            table_object = _dynamodb.Table(self,
-                id=table_def['id'],
-                partition_key=_dynamodb.Attribute(
-                    name=table_def['partition_key'],
-                    type=_dynamodb.AttributeType.STRING
-                ),
-                billing_mode=_dynamodb.BillingMode.PAY_PER_REQUEST,
-                removal_policy=aws_cdk.RemovalPolicy.DESTROY
-            )
+        # enableOldTableDefs = parameters.enableOldTableDefs
+        # table_defs = old_table_defs if enableOldTableDefs else new_table_defs
+        # for table_def in table_defs:
+        #     table_object = _dynamodb.Table(self,
+        #         table_name= f"{parameters.project}-{parameters.env}-{parameters.app}-oldDynamoTable",
+        #         id=table_def['id'],
+        #         partition_key=_dynamodb.Attribute(
+        #             name=table_def['partition_key'],
+        #             type=_dynamodb.AttributeType.STRING
+        #         ),
+        #         billing_mode=_dynamodb.BillingMode.PAY_PER_REQUEST,
+        #         removal_policy=aws_cdk.RemovalPolicy.DESTROY
+        #     )
 
-            self.table_objects[table_def['id']] = table_object
+        #     self.table_objects[table_def['id']] = table_object
 
-            ssm_param = ssm.StringParameter(
-                self, f"{table_def['id']}Parameter",
-                parameter_name=f"/{construct_id}/{table_def['id']}",
-                string_value=table_object.table_name,
-                simple_name=False,
-            )
-            self.ssm_parameters[table_def['id']] = ssm_param.string_value
+        #     ssm_param = ssm.StringParameter(
+        #         self, f"{table_def['id']}Parameter",
+        #         parameter_name=f"/{construct_id}/{table_def['id']}",
+        #         string_value=table_object.table_name,
+        #         simple_name=False,
+        #     )
+        #     self.ssm_parameters[table_def['id']] = ssm_param.string_value
 
 ###################################  Running  ####################################################
+
+        enableOldTableDefs = parameters.enableOldTableDefs
+        if enableOldTableDefs:
+            for table_def in old_table_defs:
+                table_object = _dynamodb.Table(self,
+                    # table_name= f"{parameters.project}-{parameters.env}-{parameters.app}-oldDynamoTable",
+                    id=table_def['id'],
+                    partition_key=_dynamodb.Attribute(
+                        name=table_def['partition_key'],
+                        type=_dynamodb.AttributeType.STRING
+                    ),
+                    billing_mode=_dynamodb.BillingMode.PAY_PER_REQUEST,
+                    removal_policy=aws_cdk.RemovalPolicy.DESTROY
+                )
+
+                self.table_objects[table_def['id']] = table_object
+
+                ssm_param = ssm.StringParameter(
+                    self, f"{table_def['id']}Parameter",
+                    parameter_name=f"/{construct_id}/{table_def['id']}",
+                    string_value=table_object.table_name,
+                    simple_name=False,
+                )
+                self.ssm_parameters[table_def['id']] = ssm_param.string_value
+        else:
+            for table_def in new_table_defs:
+                table_object = _dynamodb.Table(self,
+                    # table_name= f"{parameters.project}-{parameters.env}-{parameters.app}-newDynamoTable",
+                    id=table_def['id'],
+                    partition_key=_dynamodb.Attribute(
+                        name=table_def['partition_key'],
+                        type=_dynamodb.AttributeType.STRING
+                    ),
+                    billing_mode=_dynamodb.BillingMode.PAY_PER_REQUEST,
+                    removal_policy=aws_cdk.RemovalPolicy.DESTROY
+                )
+
+                self.table_objects[table_def['id']] = table_object
+
+                ssm_param = ssm.StringParameter(
+                    self, f"{table_def['id']}Parameter",
+                    parameter_name=f"/{construct_id}/{table_def['id']}",
+                    string_value=table_object.table_name,
+                    simple_name=False,
+                )
+                self.ssm_parameters[table_def['id']] = ssm_param.string_value

@@ -1,1 +1,7 @@
 cdk bootstrap aws://488065772113/us-east-1
+
+cdk deploy --all --app "python app1.py" 
+cdk deploy --all --app "python app2.py"
+
+cdk destroy --all --app "python app1.py" 
+cdk destroy --all --app "python app2.py" 

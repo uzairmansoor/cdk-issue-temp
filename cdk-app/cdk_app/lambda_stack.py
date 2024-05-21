@@ -37,7 +37,7 @@ class LambdaStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         lambdaExecutionRole = iam.Role(self, "lambdaExecutionRole",
-            role_name = "lambdaExecutionRole",
+            role_name = f"{construct_id}-lambdaExecutionRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
         )
         
@@ -59,44 +59,65 @@ class LambdaStack(Stack):
 
         self.ssm_parameters = ssm_parameters
 
-        enableOldLambdaDefs = parameters.enableOldLambdaDefs
-        lambda_defs = old_lambda_defs if enableOldLambdaDefs else new_lambda_defs
-        for lambda_def in lambda_defs:
-            lambda_env_data={}
+        # enableOldLambdaDefs = parameters.enableOldLambdaDefs
+        # lambda_defs = old_lambda_defs if enableOldLambdaDefs else new_lambda_defs
+        # for lambda_def in lambda_defs:
+        #     lambda_env_data={}
             
-            for table_used in lambda_def['tables_used']:
-                # table_name = ssm.StringParameter.value_from_lookup(
-                #     self, f"/cdk-app/{table_used}"
-                # )
-                table_name = self.ssm_parameters.get(table_used)
-                lambda_env_data[f'TABLENAME{table_used.upper()}'] = table_name
+        #     for table_used in lambda_def['tables_used']:
+        #         # table_name = ssm.StringParameter.value_from_lookup(
+        #         #     self, f"/cdk-app/{table_used}"
+        #         # )
+        #         table_name = self.ssm_parameters.get(table_used)
+        #         lambda_env_data[f'TABLENAME{table_used.upper()}'] = table_name
 
-            sample_lambda = _lambda.Function(self,
-                id=lambda_def['id'],
-                runtime=_lambda.Runtime.PYTHON_3_9,
-                code=_lambda.Code.from_asset("lambda"),
-                handler=f"{lambda_def['id']}.handler",
-                role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn=lambdaExecutionRole.role_arn),
-                environment=lambda_env_data
-            )
+        #     sample_lambda = _lambda.Function(self,
+        #         id=lambda_def['id'],
+        #         runtime=_lambda.Runtime.PYTHON_3_9,
+        #         code=_lambda.Code.from_asset("lambda"),
+        #         handler=f"{lambda_def['id']}.handler",
+        #         role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn=lambdaExecutionRole.role_arn),
+        #         environment=lambda_env_data
+        #     )
         
-        # else:
-        #     for lambda_def in new_lambda_defs:
-        #         lambda_env_data={}
+        enableOldLambdaDefs = parameters.enableOldLambdaDefs
+        if enableOldLambdaDefs:
+            for lambda_def in old_lambda_defs:
+                lambda_env_data={}
+                
+                for table_used in lambda_def['tables_used']:
+                    # table_name = ssm.StringParameter.value_from_lookup(
+                    #     self, f"/cdk-app/{table_used}"
+                    # )
+                    table_name = self.ssm_parameters.get(table_used)
+                    lambda_env_data[f'TABLENAME{table_used.upper()}'] = table_name
 
-        #         for table_used in lambda_def['tables_used']:
-        #             table_name = ssm.StringParameter.value_from_lookup(
-        #                 self, f"/cdk-app/{table_used}"
-        #             )
-        #             lambda_env_data[f'TABLENAME{table_used.upper()}'] = table_name
+                sample_lambda = _lambda.Function(self,
+                    # function_name= f"{parameters.project}-{parameters.env}-{parameters.app}-oldLambdaFunc",
+                    id=lambda_def['id'],
+                    runtime=_lambda.Runtime.PYTHON_3_9,
+                    code=_lambda.Code.from_asset("lambda"),
+                    handler=f"{lambda_def['id']}.handler",
+                    role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn=lambdaExecutionRole.role_arn),
+                    environment=lambda_env_data
+                )
+        else:
+            for lambda_def in new_lambda_defs:
+                lambda_env_data={}
+        
+                for table_used in lambda_def['tables_used']:
+                    # table_name = ssm.StringParameter.value_from_lookup(
+                    #     self, f"/cdk-app/{table_used}"
+                    # )
+                    table_name = self.ssm_parameters.get(table_used)
+                    lambda_env_data[f'TABLENAME{table_used.upper()}'] = table_name
 
-        #         sample_lambda = _lambda.Function(self,
-        #             id=lambda_def['id'],
-        #             runtime=_lambda.Runtime.PYTHON_3_9,
-        #             code=_lambda.Code.from_asset("lambda"),
-        #             handler=f"{lambda_def['id']}.handler",
-        #             environment=lambda_env_data
-        #         )
-
-                # for table_used in lambda_def['tables_used']:
-                #     tables[table_used].grant_read_write_data(sample_lambda)
+                sample_lambda = _lambda.Function(self,
+                    # function_name= f"{parameters.project}-{parameters.env}-{parameters.app}-newLambdaFunc",
+                    id=lambda_def['id'],
+                    runtime=_lambda.Runtime.PYTHON_3_9,
+                    code=_lambda.Code.from_asset("lambda"),
+                    handler=f"{lambda_def['id']}.handler",
+                    role=iam.Role.from_role_arn(self, f"{lambda_def['id']}IamRole", role_arn=lambdaExecutionRole.role_arn),
+                    environment=lambda_env_data
+                )
